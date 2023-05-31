@@ -22,22 +22,19 @@ public class SwerveModule {
   // INFORMATION
   private final double defensiveAngleDeg;
   private double wheelOrientation = 0.0;
-  private double abs_encoder_value_max_value;
-  public final double MODULE_TANGENT_DEG;
+  public final SwerveModuleInfo info;
+  
 
-  public SwerveModule(int drive_motor_CAN_ID, int angle_motor_CAN_ID, int encoder_CAN_ID, double abs_encoder_max_value,
-  double abs_encoder_value_when_wheel_straight, double x, double y) {
-      
-      this.angleMotor = new WPI_TalonFX(angle_motor_CAN_ID);
-      this.driveMotor = new WPI_TalonFX(drive_motor_CAN_ID);
-      this.orientationEncoder = new CANCoder(encoder_CAN_ID);
-      this.defensiveAngleDeg = VectorR.fromCartesian(x, y).getAngle();
-      this.abs_encoder_value_max_value = abs_encoder_max_value;
-      angleMotor.setNeutralMode(NeutralMode.Brake);
-      driveMotor.setNeutralMode(NeutralMode.Brake);
-      orientationEncoder.setPosition(0);
-      driveMotor.setSelectedSensorPosition(0);
-      MODULE_TANGENT_DEG = VectorR.fromCartesian(x, y).getAngle() + 90;
+  public SwerveModule(SwerveModuleInfo info) {
+    this.info = info;
+    this.angleMotor = new WPI_TalonFX(info.TURN_ID);
+    this.driveMotor = new WPI_TalonFX(info.DRIVE_ID);
+    this.orientationEncoder = new CANCoder(info.ENCODER_ID);
+    this.defensiveAngleDeg = VectorR.fromCartesian(info.X, info.Y).getAngle();
+    angleMotor.setNeutralMode(NeutralMode.Brake);
+    driveMotor.setNeutralMode(NeutralMode.Brake);
+    orientationEncoder.setPosition(0);
+    driveMotor.setSelectedSensorPosition(0);
   }
 
   //RESET METHODS
@@ -50,7 +47,7 @@ public class SwerveModule {
    * negative (-) = right turn CW
    */
   public double getWheelOrientationDegrees() {
-    return wheelOrientation- abs_encoder_value_max_value;
+    return wheelOrientation- info.ABS_ENCODER_VALUE_WHEN_STRAIGHT;
   }
 
   // MODULE SPEEDS CALCULATIONS

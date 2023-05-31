@@ -15,22 +15,13 @@ package frc.robot;
 public final class Constants {
   public static final double MODULE_ANGLE_KP = 0.00524;
 
-  public static final int DRIVE_CONTROL_PORT = 1;
+  public static final int DRIVE_CONTROL_PORT = 0;
 
-  public static final int FRONT_RIGHT_TURN_MOTOR_ID = 7;
-  public static final int FRONT_RIGHT_DRIVE_MOTOR_ID = 8;
-  public static final int FRONT_RIGHT_ABS_ENCODER_ID = 14;
+  // Swerve
+  public static final SwerveModuleInfo FRONT_RIGHT = new SwerveModuleInfo(8, 7, 14, 360, 64.599, 1, -1);
+  public static final SwerveModuleInfo FRONT_LEFT = new SwerveModuleInfo(2, 1, 11, 360, 67.5, 1, 1);
+  public static final SwerveModuleInfo BACK_RIGHT = new SwerveModuleInfo(6, 5, 13, 360, 288.28, -1, -1);
+  public static final SwerveModuleInfo BACK_LEFT = new SwerveModuleInfo(4, 9, 12, 360, 1.2304, -1, 1);
 
-  public static final int FRONT_LEFT_TURN_MOTOR_ID = 1;
-  public static final int FRONT_LEFT_DRIVE_MOTOR_ID = 2;
-  public static final int FRONT_LEFT_ABS_ENCODER_ID = 11;
-
-  public static final int BACK_RIGHT_TURN_MOTOR_ID = 5;
-  public static final int BACK_RIGHT_DRIVE_MOTOR_ID = 6;
-  public static final int BACK_RIGHT_ABS_ENCODER_ID = 13;
-
-  public static final int BACK_LEFT_TURN_MOTOR_ID = 9;
-  public static final int BACK_LEFT_DRIVE_MOTOR_ID = 4;
-  public static final int BACK_LEFT_ABS_ENCODER_ID = 12;
   
 }

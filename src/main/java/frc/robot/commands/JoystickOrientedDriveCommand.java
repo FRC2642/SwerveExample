@@ -11,17 +11,14 @@ import frc.robot.utils.MathR;
 import frc.robot.utils.VectorR;
 
 public class JoystickOrientedDriveCommand extends CommandBase {
-  
-  private double MAX_SPEED = 0.25;
+
+  private double maxSpeed = 0.25;
 
   private final DriveSubsystem drive;
   private final XboxController control;
   private final VectorR leftJoystick = new VectorR();
   private final VectorR rightJoystick = new VectorR();
 
-  final double TURN_KP = 0.017;
-  
-  
   public JoystickOrientedDriveCommand(DriveSubsystem drive, XboxController control) {
     this.drive = drive;
     this.control = control;
@@ -29,28 +26,47 @@ public class JoystickOrientedDriveCommand extends CommandBase {
   }
 
   @Override
-  public void initialize() {
-    DriveSubsystem.resetGyro(0.0);
-  }
+  public void initialize() {}
+
+  final double TURN_KP = 0.017;
+  private boolean isLocked = false;
+  private double lockedHeading = 0;
 
   @Override
   public void execute() {
-    leftJoystick.setFromCartesian(control.getLeftX(), -control.getLeftY());
-    leftJoystick.rotate(-90);
-    rightJoystick.setFromCartesian(control.getRightX(), -control.getRightY());
-    rightJoystick.rotate(90);
+      maxSpeed = MathR.lerp(0.25, 1.2, 0.0, 1.0, control.getLeftTriggerAxis());
 
-    if (leftJoystick.getMagnitude() < 0.1 && rightJoystick.getMagnitude() < 0.1) {
-      drive.stop();
-      return;
-    }
+      leftJoystick.setFromCartesian(control.getLeftX(), -control.getLeftY());
+      leftJoystick.rotate(-90);
+      rightJoystick.setFromCartesian(control.getRightX(), -control.getRightY());
+      rightJoystick.rotate(-90);
 
-    double angleToFace = rightJoystick.getAngle();
-    double turnPower = MathR.limit(TURN_KP * MathR.getDistanceToAngle(DriveSubsystem.getYawDegrees(), angleToFace), -1, 1);
+      double yaw = DriveSubsystem.getYawDegrees();
 
-    leftJoystick.mult(MAX_SPEED);
-    drive.move(leftJoystick, turnPower * MAX_SPEED);
+      if (leftJoystick.getMagnitude() < 0.1 && rightJoystick.getMagnitude() < 0.2) {
+        drive.stop();
+        isLocked = false;
+        return;
+      }
 
+      if (leftJoystick.getMagnitude() > 0.1 && rightJoystick.getMagnitude() < 0.2) {
+        if (!isLocked) {
+          lockedHeading = yaw;
+          isLocked = true;
+        }
+      } 
+      else if (leftJoystick.getMagnitude() < 0.1 && rightJoystick.getMagnitude() > 0.2) {
+        leftJoystick.setFromCartesian(0.0, 0.0);
+      }
+      else isLocked = false;
+
+      double angleToFace = isLocked ? lockedHeading : rightJoystick.getAngle();
+
+      double turnPower = MathR.lerp(0.35, 1, 0.2, 1.0, rightJoystick.getMagnitude())  * MathR
+          .limit(TURN_KP * MathR.getDistanceToAngle(yaw, angleToFace), -1, 1);
+
+      leftJoystick.mult(maxSpeed);
+      drive.move(leftJoystick, turnPower * maxSpeed);
   }
 
   @Override

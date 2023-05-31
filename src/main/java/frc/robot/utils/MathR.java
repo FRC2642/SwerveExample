@@ -21,4 +21,8 @@ public class MathR {
         if (input > max) return max;
         return input;
     }
+
+    public static double lerp(double outputMin, double outputMax, double inputMin, double inputMax, double input) {
+        return outputMin + (outputMax - outputMin)*(input - inputMin)/(inputMax - inputMin);
+    }
 }

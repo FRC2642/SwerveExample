@@ -9,17 +9,18 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.utils.VectorR;
 
-public class JoystickTurnSpeedCommand extends CommandBase {
+public class JoystickTurnSpeedDriveCommand extends CommandBase {
 
   static final double MAX_SPEED = 0.25;
+
   final DriveSubsystem drive;
 
   // CONTROLLER DATA
   XboxController control;
   VectorR leftJoystick = new VectorR();
   double rightJoystick = 0.0;
-  
-  public JoystickTurnSpeedCommand(DriveSubsystem drive, XboxController control) {
+
+  public JoystickTurnSpeedDriveCommand(DriveSubsystem drive, XboxController control) {
     this.drive = drive;
     this.control = control;
     
@@ -31,11 +32,13 @@ public class JoystickTurnSpeedCommand extends CommandBase {
     DriveSubsystem.resetGyro(0.0);
   }
 
-  // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+
     leftJoystick.setFromCartesian(control.getLeftX(), -control.getLeftY());
-    leftJoystick.rotate(Math.toRadians(-90));
+    //TEST
+    leftJoystick.rotate(Math.toRadians(0));
+    //////
     leftJoystick.pow(2);
     rightJoystick = -1 * Math.pow(control.getRightX(), 2) * Math.signum(control.getRightX());
 
@@ -47,7 +50,6 @@ public class JoystickTurnSpeedCommand extends CommandBase {
     leftJoystick.mult(MAX_SPEED);
     drive.move(leftJoystick, rightJoystick * MAX_SPEED);
   }
-
 
   @Override
   public boolean isFinished() {

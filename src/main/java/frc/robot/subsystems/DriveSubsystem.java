@@ -4,40 +4,32 @@
 
 package frc.robot.subsystems;
 
-import java.util.ArrayList;
-
 import com.kauailabs.navx.frc.AHRS;
-
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.SwerveModule;
+import frc.robot.SwerveModules;
 import frc.robot.utils.VectorR;
 
 public class DriveSubsystem extends SubsystemBase {
 
-  //HARDWARE
-  private final ArrayList<SwerveModule> modules = new ArrayList<SwerveModule>();
+  // COMPONENTS
+  public final SwerveModules modules;
   private static AHRS gyro;
 
-  //OTHER
+  // OTHER
   private boolean defensiveMode = true;
   private static double yawOffsetDegrees = 0;
-  
+
   public DriveSubsystem() {
-    SwerveModule frontLeft = new SwerveModule(Constants.FRONT_LEFT_DRIVE_MOTOR_ID, Constants.FRONT_LEFT_TURN_MOTOR_ID, Constants.FRONT_LEFT_ABS_ENCODER_ID, 360, 64.599, 1, -1);
-    SwerveModule frontRight = new SwerveModule(Constants.FRONT_RIGHT_DRIVE_MOTOR_ID, Constants.FRONT_RIGHT_TURN_MOTOR_ID, Constants.FRONT_RIGHT_ABS_ENCODER_ID, 360, 67.5, 1, 1);
-    SwerveModule backLeft = new SwerveModule(Constants.BACK_LEFT_DRIVE_MOTOR_ID, Constants.BACK_LEFT_TURN_MOTOR_ID, Constants.BACK_LEFT_ABS_ENCODER_ID, 360, 1.2304, -1, 1);
-    SwerveModule backRight = new SwerveModule(Constants.BACK_RIGHT_DRIVE_MOTOR_ID, Constants.BACK_RIGHT_TURN_MOTOR_ID, Constants.BACK_RIGHT_ABS_ENCODER_ID, 360, 288.28, -1, -1);
-  
-    modules.add(frontLeft);
-    modules.add(frontRight);
-    modules.add(backLeft);
-    modules.add(backRight);
+    modules = new SwerveModules(
+        new SwerveModule(Constants.FRONT_RIGHT), new SwerveModule(Constants.FRONT_LEFT),
+        new SwerveModule(Constants.BACK_RIGHT), new SwerveModule(Constants.BACK_LEFT));
 
     gyro = new AHRS();
     gyro.calibrate();
   }
-
 
   /*
    * SYSTEM STANDARD FOLLOWS COORDINATE PLANE STANDARD
@@ -48,18 +40,21 @@ public class DriveSubsystem extends SubsystemBase {
    * NOTE: the speed of any wheel can reach a maximum of turn + |velocity|
    */
   public void move(VectorR directionalSpeed, double turnSpeed) {
+
     
     VectorR directionalPull = directionalSpeed.clone();
     directionalPull.rotate(-getYawDegrees());
 
     for (SwerveModule module : modules) {
-      VectorR rotationalPull = VectorR.fromPolar(turnSpeed, module.MODULE_TANGENT_DEG);
+
+      VectorR rotationalPull = VectorR.fromPolar(turnSpeed, module.info.MODULE_TANGENT_DEG);
       VectorR wheelPull = VectorR.addVectors(directionalPull, rotationalPull);
 
       module.update(wheelPull.getMagnitude(), wheelPull.getAngle());
+
     }
   }
-
+  
   public void stop() {
     for (SwerveModule module : modules) {
       if (defensiveMode)
@@ -67,19 +62,32 @@ public class DriveSubsystem extends SubsystemBase {
       else
         module.stop();
     }
+
   }
 
   public void setDefensiveMode(boolean activated) {
     defensiveMode = activated;
   }
+  public boolean getDefensiveMode() {
+    return defensiveMode;
+  }
 
+  /*
+   * positive (+) = left turn CCW
+   * negative (-) = right turn CW
+   */
   public static double getYawDegrees() {
-    return gyro.getYaw() + yawOffsetDegrees;
+    return -1 * gyro.getYaw() + yawOffsetDegrees;
   }
 
   public static void resetGyro(double yawDegrees) {
     gyro.reset();
     gyro.calibrate();
     yawOffsetDegrees = yawDegrees;
+  }
+  
+  public void resetDriveEncoders() {
+    for (var mod : modules)
+      mod.resetDriveEncoder();
   }
 }
